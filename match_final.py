@@ -20,13 +20,13 @@ import json, re, unicodedata
 from collections import defaultdict
 
 # ===== 加载数据 =====
-with open('/home/ubuntu/upload/11892.json') as f:
+with open('本地文件11892.json', encoding='utf-8') as f:
     local_files = json.load(f)
-with open('/home/ubuntu/upload/总json.json') as f:
+with open('视频访问情况.json', encoding='utf-8') as f:
     yt_raw = json.load(f)
-with open('/home/ubuntu/upload/youtube_to_keys.json') as f:
+with open('youtube_to_keys.json', encoding='utf-8') as f:
     y2k = json.load(f)
-with open('/home/ubuntu/upload/files20072.json') as f:
+with open('files20072.json', encoding='utf-8') as f:
     files20072 = json.load(f)
 
 # ===== 解析 YouTube =====
@@ -226,10 +226,10 @@ print(f"生成了但 files20072 没有的:    {len(generated_keys - files20072_k
 print(f"\n目标 20072，当前生成: {len(generated_keys)}")
 
 # ===== 保存结果 =====
-with open('/home/ubuntu/local2youtubeid.json', 'w', encoding='utf-8') as f:
+with open('local2youtubeid.json', 'w', encoding='utf-8') as f:
     json.dump(result, f, ensure_ascii=False, indent=2)
 
-with open('/home/ubuntu/unmatched_local_final.json', 'w', encoding='utf-8') as f:
+with open('unmatched_local_final.json', 'w', encoding='utf-8') as f:
     json.dump(unmatched, f, ensure_ascii=False, indent=2)
 
 print(f"\n已保存 local2youtubeid.json ({len(result)} 条)")

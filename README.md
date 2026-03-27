@@ -43,11 +43,26 @@
 
 ## 文件说明
 
+### 输入文件
+
 | 文件 | 说明 |
 |---|---|
-| `match_final.py` | 多策略匹配算法脚本 |
-| `local2youtubeid.json` | 匹配结果：本地文件名 → video_id（11,766 条）|
-| `unmatched_local_final.json` | 无法匹配的本地文件（60 条）|
+| `本地文件11892.json` | 本地音乐文件名列表（11,892 个 .mp3 文件名）|
+| `视频访问情况.json` | YouTube URL → 标题映射，含访问失败记录（15,005 条）|
+| `youtube_to_keys.json` | video_id → 样本 key 列表（15,006 个视频，25,861 个 key）|
+
+### 输出文件
+
+| 文件 | 生成依赖 | 说明 |
+|---|---|---|
+| `local2youtubeid.json` | `本地文件11892.json` + `视频访问情况.json` | 本地文件名 → video_id（11,766 条）|
+| `unmatched_local_final.json` | 同上 | 无法匹配的本地文件（60 条）|
+
+### 算法脚本
+
+| 文件 | 说明 |
+|---|---|
+| `match_final.py` | 多策略匹配算法，读取输入文件，生成输出文件 |
 
 ---
 
@@ -81,10 +96,16 @@
 
 ## 复现
 
-```bash
-# 准备数据文件（放在同目录）：
-#   11892.json、总json.json、youtube_to_keys.json
+将以下文件放在同一目录下运行脚本：
 
+```
+本地文件11892.json
+视频访问情况.json
+youtube_to_keys.json
+files20072.json        （可选，用于验证结果）
+```
+
+```bash
 python3 match_final.py
 # 输出：local2youtubeid.json、unmatched_local_final.json
 ```
