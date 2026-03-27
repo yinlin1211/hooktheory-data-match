@@ -41,6 +41,58 @@
 
 ---
 
+## 完整流程说明
+
+### 第一步：获取 YouTube 视频标题
+
+对 `youtube_to_keys.json` 中的 15,006 个视频逐一访问，记录标题，结果保存为 `视频访问情况.json`（YouTube URL → 标题）。其中 2,542 个视频多次访问均无内容（可能已下架），无法获取标题，对应 4,373 个样本 key 永久损失。
+
+### 第二步：下载视频音频
+
+对访问成功的 12,463 个视频尝试下载音频文件，保存到本地，共下载 **11,892 个文件**（`本地文件11892.json`）。其中 717 个视频虽有标题但下载失败（版权限制 / 已下架 / 私密），对应 1,374 个样本 key 损失。
+
+### 第三步：本地文件与 video_id 匹配
+
+本地文件名由 YouTube 标题直接保存，存在标点替换、末尾重复标记等系统性差异。使用 `match_final.py` 对 `本地文件11892.json` 和 `视频访问情况.json` 进行多策略规范化匹配，成功匹配 **11,766 个文件**，结果保存为 `匹配结果.csv`（本地文件名 → video_id）。
+
+### 第四步：生成样本列表
+
+使用 `generate_samples.py`，遍历 `匹配结果.csv` 中每个 video_id，在 `youtube_to_keys.json` 中查找对应的所有 key，汇总去重后输出 `samples.json`，共 **20,113 个样本 key**。
+
+```
+youtube_to_keys.json（15,006 个视频，25,861 个 key）
+        ↓ 访问获取标题
+视频访问情况.json（12,463 个成功，2,542 个失败）
+        ↓ 下载音频
+本地文件11892.json（11,892 个文件，717 个视频下载失败）
+        ↓ match_final.py 匹配
+匹配结果.csv（11,766 条，本地文件名 → video_id）
+        ↓ generate_samples.py 生成
+samples.json（20,113 个样本 key）
+```
+
+---
+
+## 使用方法
+
+### 重新生成匹配结果
+
+```bash
+# 所需文件：本地文件11892.json、视频访问情况.json、youtube_to_keys.json
+python3 match_final.py
+# 输出：local2youtubeid.json、unmatched_local_final.json
+```
+
+### 生成样本列表
+
+```bash
+# 所需文件：匹配结果.csv、youtube_to_keys.json
+python3 generate_samples.py
+# 输出：samples.json（20,113 个样本 key）
+```
+
+---
+
 ## 文件说明
 
 ### 输入文件
@@ -55,14 +107,16 @@
 
 | 文件 | 生成依赖 | 说明 |
 |---|---|---|
-| `local2youtubeid.json` | `本地文件11892.json` + `视频访问情况.json` | 本地文件名 → video_id（11,766 条）|
+| `匹配结果.csv` | `本地文件11892.json` + `视频访问情况.json` | 本地文件名 → video_id（11,766 条）|
+| `local2youtubeid.json` | 同上 | 匹配结果 JSON 格式版本 |
 | `unmatched_local_final.json` | 同上 | 无法匹配的本地文件（60 条）|
 
-### 算法脚本
+### 脚本
 
 | 文件 | 说明 |
 |---|---|
-| `match_final.py` | 多策略匹配算法，读取输入文件，生成输出文件 |
+| `match_final.py` | 多策略匹配算法，生成 `匹配结果.csv` 和 `local2youtubeid.json` |
+| `generate_samples.py` | 从 `匹配结果.csv` + `youtube_to_keys.json` 生成样本列表 |
 
 ---
 
@@ -91,21 +145,3 @@
 | **合计** | **11,766** |
 
 经逐条核查，**误匹配数为 0**。
-
----
-
-## 复现
-
-将以下文件放在同一目录下运行脚本：
-
-```
-本地文件11892.json
-视频访问情况.json
-youtube_to_keys.json
-files20072.json        （可选，用于验证结果）
-```
-
-```bash
-python3 match_final.py
-# 输出：local2youtubeid.json、unmatched_local_final.json
-```
